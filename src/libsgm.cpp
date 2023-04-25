@@ -97,7 +97,7 @@ public:
 		d_dispR_.create(height, width, SGM_16U, dst_pitch);
 	}
 
-	void execute(const void* srcL, const void* srcR, void* dst)
+	void execute(const void* srcL, const void* srcR, void* dstL, void* dstR)
 	{
 		if (is_src_devptr_) {
 			d_srcL_.create((void*)srcL, height_, width_, src_type_, src_pitch_);
@@ -109,7 +109,8 @@ public:
 		}
 		if (is_dst_devptr_ && dst_type_ == SGM_16U) {
 			// when threre is no device-host copy or type conversion, use passed buffer
-			d_dispL_.create((void*)dst, height_, width_, SGM_16U, dst_pitch_);
+			d_dispL_.create((void*)dstL, height_, width_, SGM_16U, dst_pitch_);
+			d_dispR_.create((void*)dstR, height_, width_, SGM_16U, dst_pitch_);
 		}
 
 		// census transform
@@ -129,19 +130,26 @@ public:
 		details::median_filter(d_tmpR_, d_dispR_);
 
 		// consistency check
-		details::check_consistency(d_dispL_, d_dispR_, d_srcL_, param_.subpixel, param_.LR_max_diff);
+		// details::check_consistency(d_dispL_, d_dispR_, d_srcL_, param_.subpixel, param_.LR_max_diff);
+		// details::check_consistency(d_dispR_, d_dispL_, d_srcR_, param_.subpixel, param_.LR_max_diff); // km97?
 		details::correct_disparity_range(d_dispL_, param_.subpixel, param_.min_disp);
+		details::correct_disparity_range(d_dispR_, param_.subpixel, param_.min_disp);
 
 		if (!is_dst_devptr_ && dst_type_ == SGM_8U) {
 			details::cast_16bit_to_8bit(d_dispL_, d_tmpL_);
-			d_tmpL_.download(dst);
+			details::cast_16bit_to_8bit(d_dispR_, d_tmpR_);
+			d_tmpL_.download(dstL);
+			d_tmpR_.download(dstR);
 		}
 		else if (is_dst_devptr_ && dst_type_ == SGM_8U) {
-			DeviceImage d_dst(dst, height_, width_, SGM_8U, dst_pitch_);
-			details::cast_16bit_to_8bit(d_dispL_, d_dst);
+			DeviceImage d_dstL(dstL, height_, width_, SGM_8U, dst_pitch_);
+			DeviceImage d_dstR(dstR, height_, width_, SGM_8U, dst_pitch_);
+			details::cast_16bit_to_8bit(d_dispL_, d_dstL);
+			details::cast_16bit_to_8bit(d_dispR_, d_dstR);
 		}
 		else if (!is_dst_devptr_ && dst_type_ == SGM_16U) {
-			d_dispL_.download(dst);
+			d_dispL_.download(dstL);
+			d_dispR_.download(dstR);
 		}
 		else if (is_dst_devptr_ && dst_type_ == SGM_16U) {
 			// optimize! no-copy!
@@ -205,9 +213,9 @@ StereoSGM::~StereoSGM()
 	delete impl_;
 }
 
-void StereoSGM::execute(const void* srcL, const void* srcR, void* dst)
+void StereoSGM::execute(const void* srcL, const void* srcR, void* dstL, void* dstR)
 {
-	impl_->execute(srcL, srcR, dst);
+	impl_->execute(srcL, srcR, dstL, dstR);
 }
 
 int StereoSGM::get_invalid_disparity() const

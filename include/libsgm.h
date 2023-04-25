@@ -147,14 +147,15 @@ public:
 	* Execute stereo semi global matching.
 	* @param left_pixels  A pointer stored input left image.
 	* @param right_pixels A pointer stored input right image.
-	* @param dst          Output pointer. User must allocate enough memory.
+	* @param dstL         Output pointer left disparity. User must allocate enough memory.
+	* @param dstR         Output pointer right disparity. User must allocate enough memory.
 	* @attention
 	* You need to allocate dst memory at least width x height x sizeof(element_type) bytes.
 	* The element_type is uint8_t for output_depth_bits == 8 and uint16_t for output_depth_bits == 16.
 	* Note that dst element value would be multiplied StereoSGM::SUBPIXEL_SCALE if subpixel option was enabled.
 	* Value of Invalid disparity is equal to return value of `get_invalid_disparity` member function.
 	*/
-	LIBSGM_API void execute(const void* left_pixels, const void* right_pixels, void* dst);
+	LIBSGM_API void execute(const void* left_pixels, const void* right_pixels, void* dstL, void* dstR);
 
 	/**
 	* Generate invalid disparity value from Parameter::min_disp and Parameter::subpixel
