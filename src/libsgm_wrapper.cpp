@@ -102,42 +102,48 @@ struct LibSGMWrapper::Creator
 
 #ifdef BUILD_OPENCV_WRAPPER
 
-void LibSGMWrapper::execute(const cv::cuda::GpuMat& I1, const cv::cuda::GpuMat& I2, cv::cuda::GpuMat& disparity)
+void LibSGMWrapper::execute(const cv::cuda::GpuMat& I1, const cv::cuda::GpuMat& I2, cv::cuda::GpuMat& disparity1, cv::cuda::GpuMat& disparity2)
 {
 	const cv::Size size = I1.size();
 	CV_Assert(size == I2.size());
 	CV_Assert(I1.type() == I2.type());
 	const int depth = I1.depth();
 	CV_Assert(depth == CV_8U || depth == CV_16U);
-	if (disparity.size() != size || disparity.depth() != CV_16S) {
-		disparity.create(size, CV_16S);
+	if (disparity1.size() != size || disparity1.depth() != CV_16S) {
+		disparity1.create(size, CV_16S);
 	}
-	std::unique_ptr<Creator> creator(new Creator(I1, disparity));
+	if (disparity2.size() != size || disparity2.depth() != CV_16S) {
+		disparity2.create(size, CV_16S);
+	}
+	std::unique_ptr<Creator> creator(new Creator(I1, disparity1));
 	if (!sgm_ || !prev_ || *creator != *prev_) {
 		sgm_.reset(creator->createStereoSGM(numDisparity_, param_));
 	}
 	prev_ = std::move(creator);
 
-	sgm_->execute(I1.data, I2.data, disparity.data);
+	sgm_->execute(I1.data, I2.data, disparity1.data, disparity2.data);
 }
 
-void LibSGMWrapper::execute(const cv::Mat& I1, const cv::Mat& I2, cv::Mat& disparity)
+void LibSGMWrapper::execute(const cv::Mat& I1, const cv::Mat& I2, cv::Mat& disparity1, cv::Mat& disparity2)
 {
 	const cv::Size size = I1.size();
 	CV_Assert(size == I2.size());
 	CV_Assert(I1.type() == I2.type());
 	const int depth = I1.depth();
 	CV_Assert(depth == CV_8U || depth == CV_16U);
-	if (disparity.size() != size || disparity.depth() != CV_16S) {
-		disparity.create(size, CV_16S);
+	if (disparity1.size() != size || disparity1.depth() != CV_16S) {
+		disparity1.create(size, CV_16S);
 	}
-	std::unique_ptr<Creator> creator(new Creator(I1, disparity));
+	if (disparity2.size() != size || disparity1.depth() != CV_16S) {
+		disparity2.create(size, CV_16S);
+	}
+	std::unique_ptr<Creator> creator(new Creator(I1, disparity1));
 	if (!sgm_ || !prev_ || *creator != *prev_) {
 		sgm_.reset(creator->createStereoSGM(numDisparity_, param_));
 	}
 	prev_ = std::move(creator);
 
-	sgm_->execute(I1.data, I2.data, disparity.data);
+	sgm_->execute(I1.data, I2.data, disparity1.data, disparity2.data);
 }
 
 #endif // BUILD_OPENCV_WRAPPER

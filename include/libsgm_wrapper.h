@@ -55,18 +55,19 @@ public:
 	* type of output image `disparity` is CV_16S.
 	* Note that disparity element value would be multiplied StereoSGM::SUBPIXEL_SCALE if subpixel option was enabled.
 	*/
-	LIBSGM_API void execute(const cv::cuda::GpuMat& I1, const cv::cuda::GpuMat& I2, cv::cuda::GpuMat& disparity);
+	LIBSGM_API void execute(const cv::cuda::GpuMat& I1, const cv::cuda::GpuMat& I2, cv::cuda::GpuMat& disparity1, cv::cuda::GpuMat& disparity2);
 
 	/**
 	* Execute stereo semi global matching via wrapper class.
-	* @param I1        Input left image.  Image's type is must be CV_8U or CV_16U.
-	* @param I2        Input right image.  Image's size and type must be same with I1.
-	* @param disparity Output image.  Its memory will be allocated automatically dependent on input image size.
+	* @param I1        	Input left image.  Image's type is must be CV_8U or CV_16U.
+	* @param I2        	Input right image.  Image's size and type must be same with I1.
+	* @param disparity1	Output left image.  Its memory will be allocated automatically dependent on input image size.
+	* @param disparity2	Output right image.  Its memory will be allocated automatically dependent on input image size.
 	* @attention
 	* type of output image `disparity` is CV_16S.
 	* Note that disparity element value would be multiplied StereoSGM::SUBPIXEL_SCALE if subpixel option was enabled.
 	*/
-	LIBSGM_API void execute(const cv::Mat& I1, const cv::Mat& I2, cv::Mat& disparity);
+	LIBSGM_API void execute(const cv::Mat& I1, const cv::Mat& I2, cv::Mat& disparity1, cv::Mat& disparity2);
 
 #endif // BUILD_OPRENCV_WRAPPER
 
